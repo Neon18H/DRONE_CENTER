@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Alertas</h1>
+<form class="row g-2 mb-3" method="get">
+  <div class="col-md-3">
+    <input class="form-control" name="status" placeholder="Estado" value="{{ request.GET.status }}">
+  </div>
+  <div class="col-md-3">
+    <input class="form-control" name="severity" placeholder="Severidad" value="{{ request.GET.severity }}">
+  </div>
+  <div class="col-md-3">
+    <input class="form-control" name="category" placeholder="Categoría" value="{{ request.GET.category }}">
+  </div>
+  <div class="col-md-3">
+    <button class="btn btn-primary w-100" type="submit">Filtrar</button>
+  </div>
+</form>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Categoria</th>
+      <th>Severidad</th>
+      <th>Estado</th>
+      <th>Target</th>
+      <th>Creada</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for alert in alerts %}
+      <tr>
+        <td>{{ alert.category }}</td>
+        <td>{{ alert.severity }}</td>
+        <td>{{ alert.status }}</td>
+        <td>{{ alert.target }}</td>
+        <td>{{ alert.created_at }}</td>
+        <td>
+          <a class="btn btn-sm btn-secondary" href="{% url 'admin-alert-status' alert.id 'ACK' %}">ACK</a>
+          <a class="btn btn-sm btn-warning" href="{% url 'admin-alert-status' alert.id 'IN_PROGRESS' %}">En Progreso</a>
+          <a class="btn btn-sm btn-success" href="{% url 'admin-alert-status' alert.id 'RESOLVED' %}">Resolver</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6">Sin alertas.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

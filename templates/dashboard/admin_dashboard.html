@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Dashboard Admin</h1>
+<div class="row">
+  <div class="col-md-4">
+    <div class="small-box bg-success">
+      <div class="inner">
+        <h3>{{ drones_available }}</h3>
+        <p>Drones disponibles</p>
+      </div>
+      <div class="icon"><i class="fas fa-check"></i></div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="small-box bg-warning">
+      <div class="inner">
+        <h3>{{ drones_in_use }}</h3>
+        <p>En uso</p>
+      </div>
+      <div class="icon"><i class="fas fa-helicopter"></i></div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="small-box bg-danger">
+      <div class="inner">
+        <h3>{{ drones_maintenance }}</h3>
+        <p>Mantenimiento</p>
+      </div>
+      <div class="icon"><i class="fas fa-tools"></i></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Turnos de hoy</h3>
+  </div>
+  <div class="card-body">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Piloto</th>
+          <th>Drone</th>
+          <th>Ruta</th>
+          <th>Inicio</th>
+          <th>Fin</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for shift in shifts_today %}
+          <tr>
+            <td>{{ shift.pilot.username }}</td>
+            <td>{{ shift.drone.serial }}</td>
+            <td>{{ shift.route.name }}</td>
+            <td>{{ shift.start_at }}</td>
+            <td>{{ shift.end_at }}</td>
+            <td>{{ shift.status }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6">Sin turnos.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Alertas recientes</h3>
+  </div>
+  <div class="card-body">
+    <ul class="list-group">
+      {% for alert in recent_alerts %}
+        <li class="list-group-item">
+          <strong>{{ alert.category }}</strong> - {{ alert.severity }} - {{ alert.status }}
+          <span class="text-muted">{{ alert.created_at }}</span>
+        </li>
+      {% empty %}
+        <li class="list-group-item">Sin alertas.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

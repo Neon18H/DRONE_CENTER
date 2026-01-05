@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Inbox de Alertas</h1>
+<ul class="list-group">
+  {% for alert in alerts %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <div>
+        <strong>{{ alert.category }}</strong> - {{ alert.severity }} - {{ alert.status }}
+        <div class="text-muted">{{ alert.created_at }}</div>
+      </div>
+      <a class="btn btn-sm btn-outline-secondary" href="{% url 'pilot-alert-read' alert.id %}">Marcar leído</a>
+    </li>
+  {% empty %}
+    <li class="list-group-item">Sin alertas.</li>
+  {% endfor %}
+</ul>
+{% endblock %}
