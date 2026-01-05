@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1>Flota de Drones</h1>
+  <a class="btn btn-primary" href="{% url 'admin-drone-create' %}">Nuevo Drone</a>
+</div>
+<div class="row">
+  {% for drone in drones %}
+    <div class="col-md-4">
+      <div class="card border-{% if drone.status == 'AVAILABLE' %}success{% elif drone.status == 'IN_USE' %}warning{% elif drone.status == 'MAINTENANCE' %}danger{% else %}secondary{% endif %}">
+        <div class="card-body">
+          <h5>{{ drone.serial }}</h5>
+          <p>{{ drone.model }}</p>
+          <span class="badge bg-{% if drone.status == 'AVAILABLE' %}success{% elif drone.status == 'IN_USE' %}warning{% elif drone.status == 'MAINTENANCE' %}danger{% else %}secondary{% endif %}">
+            {{ drone.status }}
+          </span>
+        </div>
+        <div class="card-footer d-flex justify-content-end gap-2">
+          <a class="btn btn-sm btn-secondary" href="{% url 'admin-drone-update' drone.id %}">Editar</a>
+          <a class="btn btn-sm btn-danger" href="{% url 'admin-drone-delete' drone.id %}">Eliminar</a>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <p>No hay drones.</p>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1>Turnos</h1>
+  <a class="btn btn-primary" href="{% url 'admin-shift-create' %}">Nuevo Turno</a>
+</div>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Piloto</th>
+      <th>Drone</th>
+      <th>Ruta</th>
+      <th>Inicio</th>
+      <th>Fin</th>
+      <th>Estado</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for shift in shifts %}
+      <tr>
+        <td>{{ shift.pilot.username }}</td>
+        <td>{{ shift.drone.serial }}</td>
+        <td>{{ shift.route.name }}</td>
+        <td>{{ shift.start_at }}</td>
+        <td>{{ shift.end_at }}</td>
+        <td>{{ shift.status }}</td>
+        <td>
+          <a class="btn btn-sm btn-secondary" href="{% url 'admin-shift-update' shift.id %}">Editar</a>
+          <a class="btn btn-sm btn-danger" href="{% url 'admin-shift-delete' shift.id %}">Eliminar</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7">Sin turnos.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

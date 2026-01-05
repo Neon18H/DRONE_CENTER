@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<h1>Dashboard Piloto</h1>
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Mi turno</h3></div>
+      <div class="card-body">
+        {% if shift %}
+          <p><strong>Ruta:</strong> {{ shift.route.name }}</p>
+          <p><strong>Inicio:</strong> {{ shift.start_at }}</p>
+          <p><strong>Fin:</strong> {{ shift.end_at }}</p>
+          <p><strong>Estado:</strong> {{ shift.status }}</p>
+          {% if current_session %}
+            <a href="{% url 'pilot-operation-end' %}" class="btn btn-danger">Finalizar Operación</a>
+            <a href="{% url 'pilot-operation-notes' current_session.id %}" class="btn btn-secondary">Notas</a>
+          {% else %}
+            <a href="{% url 'pilot-operation-start' %}" class="btn btn-success">Iniciar Operación</a>
+          {% endif %}
+        {% else %}
+          <p>No tienes turno asignado.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Mi dron asignado</h3></div>
+      <div class="card-body">
+        {% if shift %}
+          <p><strong>Serial:</strong> {{ shift.drone.serial }}</p>
+          <p><strong>Modelo:</strong> {{ shift.drone.model }}</p>
+          <p><strong>Estado:</strong> {{ shift.drone.status }}</p>
+        {% else %}
+          <p>Sin dron asignado.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h3 class="card-title">Crear alerta</h3></div>
+  <div class="card-body">
+    <form method="post" action="{% url 'pilot-alert-create' %}">
+      {% csrf_token %}
+      {{ alert_form|crispy }}
+      <button type="submit" class="btn btn-primary">Enviar alerta</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h3 class="card-title">Alertas recibidas</h3></div>
+  <div class="card-body">
+    <ul class="list-group">
+      {% for alert in alerts_received %}
+        <li class="list-group-item">
+          <strong>{{ alert.category }}</strong> - {{ alert.severity }}
+          <span class="text-muted">{{ alert.created_at }}</span>
+        </li>
+      {% empty %}
+        <li class="list-group-item">Sin alertas.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
