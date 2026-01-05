@@ -1,29 +1,77 @@
+{% extends "base_login.html" %}
 {% load crispy_forms_tags %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DRONEX | Login</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-</head>
-<body class="hold-transition login-page">
-<div class="login-box">
-  <div class="login-logo">
-    <b>DRONEX</b> Mando
-  </div>
-  <div class="card">
-    <div class="card-body login-card-body">
-      <p class="login-box-msg">Inicia sesión</p>
-      <form method="post">
-        {% csrf_token %}
-        {{ form|crispy }}
-        <button type="submit" class="btn btn-primary btn-block w-100">Entrar</button>
-      </form>
+
+{% block content %}
+<div class="container-fluid min-vh-100 d-flex align-items-center login-command-wrapper">
+  <div class="row w-100 justify-content-center align-items-center">
+    <div class="col-lg-3 d-none d-lg-flex flex-column hud-sidebar">
+      <div class="hud-block">
+        <div class="hud-label">SYSTEM</div>
+        <div class="hud-value">ONLINE</div>
+      </div>
+      <div class="hud-block">
+        <div class="hud-label">ENCRYPTION</div>
+        <div class="hud-value">AES-256</div>
+      </div>
+      <div class="hud-block">
+        <div class="hud-label">ACCESS LEVEL</div>
+        <div class="hud-value">RESTRICTED</div>
+      </div>
+      <div class="hud-telemetry">
+        <span>GRID: ACTIVE</span>
+        <span>UPLINK: STABLE</span>
+        <span>SECTOR: A-17</span>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+      <div class="login-panel">
+        <div class="login-header">
+          <div>
+            <div class="login-logo">DRONEX</div>
+            <div class="login-subtitle">Unified Drone Command Center</div>
+          </div>
+          <span class="login-badge">SECURE ACCESS</span>
+        </div>
+
+        {% if form.non_field_errors %}
+          <div class="login-alert" role="alert">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="login-alert" role="alert">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {{ form|crispy }}
+          <button type="submit" class="btn login-submit w-100">AUTHENTICATE</button>
+        </form>
+
+        {% url 'password_reset' as password_reset_url %}
+        {% if password_reset_url %}
+          <div class="login-links">
+            <a href="{{ password_reset_url }}" class="login-link">Forgot password?</a>
+          </div>
+        {% endif %}
+      </div>
+      <div class="login-footer">
+        <span>Unauthorized access is prohibited</span>
+        <span class="login-timestamp">{% now "Y-m-d H:i:s" %}</span>
+      </div>
+      <div class="status-ticker">
+        <div class="ticker-track">
+          <span>STATUS: AUTH GATE READY</span>
+          <span>BIOMETRICS: STANDBY</span>
+          <span>CORE SYNC: 99.98%</span>
+          <span>STATUS: AUTH GATE READY</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+{% endblock %}
