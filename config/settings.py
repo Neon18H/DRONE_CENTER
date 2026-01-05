@@ -20,7 +20,7 @@ INSTALLED_APPS = [
     "fleet",
     "ops",
     "alerts",
-    "audit",
+    "audit.apps.AuditConfig",
     "dashboard",
 ]
 
