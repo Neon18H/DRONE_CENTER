@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
+from django.db.utils import OperationalError, ProgrammingError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -12,6 +13,7 @@ from accounts.decorators import role_required
 from accounts.mixins import RoleRequiredMixin
 from audit.utils import log_event
 from fleet.models import Drone
+from integrations.models import AgentCommand
 
 from .forms import DispatchShiftForm, OperationSessionForm, RouteForm, ShiftForm
 from .models import OperationSession, Route, Shift
@@ -125,11 +127,17 @@ def cancel_shift(request, shift_id):
 @login_required
 @role_required("PILOT")
 def start_operation(request):
-    shift = (
-        Shift.objects.filter(pilot=request.user, status__in=[Shift.Status.SCHEDULED, Shift.Status.ACTIVE])
-        .order_by("start_at")
-        .first()
-    )
+    try:
+        shift = (
+            Shift.objects.filter(
+                pilot=request.user, status__in=[Shift.Status.SCHEDULED, Shift.Status.ACTIVE]
+            )
+            .order_by("start_at")
+            .first()
+        )
+    except (OperationalError, ProgrammingError):
+        messages.error(request, "No hay datos disponibles. Ejecuta las migraciones.")
+        return redirect("pilot-dashboard")
     if not shift:
         messages.error(request, "No tienes un turno asignado.")
         return redirect("pilot-dashboard")
@@ -138,17 +146,51 @@ def start_operation(request):
         messages.warning(request, "Ya existe una operación en curso.")
         return redirect("pilot-dashboard")
 
+    if (
+        shift.drone.status == Drone.Status.IN_USE
+        and Shift.objects.filter(drone=shift.drone, status=Shift.Status.ACTIVE)
+        .exclude(pilot=request.user)
+        .exists()
+    ):
+        messages.error(request, "El dron ya está en uso por otro turno.")
+        return redirect("pilot-dashboard")
+
     now = timezone.now()
     if not (shift.start_at <= now <= shift.end_at):
         messages.error(request, "El turno no está en ventana de operación.")
         return redirect("pilot-dashboard")
 
-    with transaction.atomic():
-        session = OperationSession.objects.create(shift=shift, started_at=now)
-        shift.status = Shift.Status.ACTIVE
-        shift.save(update_fields=["status"])
-        Drone.objects.filter(id=shift.drone_id).update(status=Drone.Status.IN_USE)
-        log_event(request.user, "start_operation", "OperationSession", str(session.id), request)
+    try:
+        with transaction.atomic():
+            session = OperationSession.objects.create(shift=shift, started_at=now)
+            shift.status = Shift.Status.ACTIVE
+            shift.save(update_fields=["status"])
+            Drone.objects.filter(id=shift.drone_id).update(status=Drone.Status.IN_USE)
+            payload = {
+                "session_id": session.id,
+                "route_name": shift.route.name,
+                "waypoints": shift.route.waypoints,
+                "zone_geojson": shift.route.zone_geojson,
+            }
+            command = AgentCommand.objects.create(
+                drone=shift.drone,
+                created_by=request.user,
+                session=session,
+                command=AgentCommand.CommandType.START_MISSION,
+                payload=payload,
+            )
+            log_event(request.user, "start_operation", "OperationSession", str(session.id), request)
+            log_event(
+                request.user,
+                "enqueue_command",
+                "AgentCommand",
+                str(command.id),
+                request,
+                metadata={"command": command.command},
+            )
+    except (OperationalError, ProgrammingError):
+        messages.error(request, "No se pudo iniciar la operación. Ejecuta migraciones.")
+        return redirect("pilot-dashboard")
 
     messages.success(request, "Operación iniciada.")
     return redirect("pilot-dashboard")
@@ -157,11 +199,15 @@ def start_operation(request):
 @login_required
 @role_required("PILOT")
 def end_operation(request):
-    shift = (
-        Shift.objects.filter(pilot=request.user, status=Shift.Status.ACTIVE)
-        .order_by("start_at")
-        .first()
-    )
+    try:
+        shift = (
+            Shift.objects.filter(pilot=request.user, status=Shift.Status.ACTIVE)
+            .order_by("start_at")
+            .first()
+        )
+    except (OperationalError, ProgrammingError):
+        messages.error(request, "No hay datos disponibles. Ejecuta las migraciones.")
+        return redirect("pilot-dashboard")
     if not shift:
         messages.error(request, "No hay operación activa.")
         return redirect("pilot-dashboard")
@@ -175,14 +221,33 @@ def end_operation(request):
         messages.error(request, "No hay sesión activa.")
         return redirect("pilot-dashboard")
 
-    with transaction.atomic():
-        session.status = OperationSession.Status.ENDED
-        session.ended_at = timezone.now()
-        session.save(update_fields=["status", "ended_at"])
-        shift.status = Shift.Status.DONE
-        shift.save(update_fields=["status"])
-        Drone.objects.filter(id=shift.drone_id).update(status=Drone.Status.AVAILABLE)
-        log_event(request.user, "end_operation", "OperationSession", str(session.id), request)
+    try:
+        with transaction.atomic():
+            session.status = OperationSession.Status.ENDED
+            session.ended_at = timezone.now()
+            session.save(update_fields=["status", "ended_at"])
+            shift.status = Shift.Status.DONE
+            shift.save(update_fields=["status"])
+            Drone.objects.filter(id=shift.drone_id).update(status=Drone.Status.AVAILABLE)
+            command = AgentCommand.objects.create(
+                drone=shift.drone,
+                created_by=request.user,
+                session=session,
+                command=AgentCommand.CommandType.END_MISSION,
+                payload={"session_id": session.id},
+            )
+            log_event(request.user, "end_operation", "OperationSession", str(session.id), request)
+            log_event(
+                request.user,
+                "enqueue_command",
+                "AgentCommand",
+                str(command.id),
+                request,
+                metadata={"command": command.command},
+            )
+    except (OperationalError, ProgrammingError):
+        messages.error(request, "No se pudo finalizar la operación. Ejecuta migraciones.")
+        return redirect("pilot-dashboard")
 
     messages.success(request, "Operación finalizada.")
     return redirect("pilot-dashboard")
