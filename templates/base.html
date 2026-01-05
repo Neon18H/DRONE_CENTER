@@ -20,7 +20,10 @@
     </ul>
     <ul class="navbar-nav ml-auto">
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'logout' %}">Salir</a>
+        <form method="post" action="{% url 'logout' %}" class="d-inline">
+          {% csrf_token %}
+          <button class="nav-link btn btn-link p-0" type="submit">Salir</button>
+        </form>
       </li>
     </ul>
   </nav>
@@ -80,6 +83,13 @@
                 <a href="{% url 'admin-audit-list' %}" class="nav-link">
                   <i class="nav-icon fas fa-clipboard-list"></i>
                   <p>Audit Log</p>
+                </a>
+              </li>
+              <li class="nav-header">ACCOUNTS</li>
+              <li class="nav-item">
+                <a href="{% url 'admin-pilot-list' %}" class="nav-link">
+                  <i class="nav-icon fas fa-users"></i>
+                  <p>Gestión de Pilotos</p>
                 </a>
               </li>
             {% else %}
