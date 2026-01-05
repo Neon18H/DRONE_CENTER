@@ -6,6 +6,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
 DEBUG = os.getenv("DEBUG", "1") == "1"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+if ".ngrok-free.app" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(".ngrok-free.app")
+
+CSRF_TRUSTED_ORIGINS = [
+    origin for origin in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if origin
+]
+if "https://*.ngrok-free.app" not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append("https://*.ngrok-free.app")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -22,6 +30,7 @@ INSTALLED_APPS = [
     "alerts",
     "audit.apps.AuditConfig",
     "dashboard",
+    "integrations.apps.IntegrationsConfig",
 ]
 
 MIDDLEWARE = [
