@@ -12,6 +12,7 @@ urlpatterns = [
     path("ops/", include("ops.urls")),
     path("alerts/", include("alerts.urls")),
     path("audit/", include("audit.urls")),
+    path("api/agent/", include("integrations.urls")),
 ]
 
 if settings.DEBUG:
