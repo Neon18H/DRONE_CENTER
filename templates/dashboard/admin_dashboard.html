@@ -2,9 +2,9 @@
 {% load static %}
 
 {% block content %}
-<div class="content-header">
+<div class="content-header mb-4">
   <div class="container-fluid">
-    <div class="row mb-2 align-items-center">
+    <div class="row align-items-center">
       <div class="col-sm-6">
         <h1 class="m-0">Command Center</h1>
       </div>
@@ -16,107 +16,105 @@
 </div>
 
 {% if requires_migrations %}
-  <div class="alert alert-warning">
+  <div class="hud-alert hud-alert-warning">
     Ejecuta migraciones para habilitar el panel completo.
   </div>
 {% endif %}
 
-<div class="row">
+<div class="row g-4">
   <div class="col-md-3">
-    <div class="small-box bg-info">
-      <div class="inner">
-        <h3>{{ drones_online }}</h3>
-        <p class="kpi-label mb-0">Drones Online</p>
-      </div>
-      <div class="icon"><i class="fas fa-satellite-dish"></i></div>
+    <div class="hud-card hud-metric">
+      <div class="metric-label">Drone Fleet Status</div>
+      <div class="metric-value">{{ drones_online }}</div>
+      <div class="metric-label">Online</div>
+      <div class="metric-icon"><i class="fas fa-satellite-dish"></i></div>
     </div>
   </div>
   <div class="col-md-3">
-    <div class="small-box bg-success">
-      <div class="inner">
-        <h3>{{ drones_available }}</h3>
-        <p class="kpi-label mb-0">Disponibles</p>
-      </div>
-      <div class="icon"><i class="fas fa-check-circle"></i></div>
+    <div class="hud-card hud-metric">
+      <div class="metric-label">Disponibles</div>
+      <div class="metric-value">{{ drones_available }}</div>
+      <div class="metric-icon"><i class="fas fa-check-circle"></i></div>
     </div>
   </div>
   <div class="col-md-3">
-    <div class="small-box bg-warning">
-      <div class="inner">
-        <h3>{{ drones_in_use }}</h3>
-        <p class="kpi-label mb-0">En Uso</p>
-      </div>
-      <div class="icon"><i class="fas fa-fighter-jet"></i></div>
+    <div class="hud-card hud-metric">
+      <div class="metric-label">En Uso</div>
+      <div class="metric-value">{{ drones_in_use }}</div>
+      <div class="metric-icon"><i class="fas fa-fighter-jet"></i></div>
     </div>
   </div>
   <div class="col-md-3">
-    <div class="small-box bg-danger">
-      <div class="inner">
-        <h3>{{ drones_maintenance }}</h3>
-        <p class="kpi-label mb-0">Mantenimiento</p>
-      </div>
-      <div class="icon"><i class="fas fa-tools"></i></div>
+    <div class="hud-card hud-metric">
+      <div class="metric-label">Mantenimiento</div>
+      <div class="metric-value">{{ drones_maintenance }}</div>
+      <div class="metric-icon"><i class="fas fa-tools"></i></div>
     </div>
   </div>
 </div>
 
-<div class="row">
+<div class="row g-4 mt-1">
   <div class="col-lg-3 col-md-6">
-    <div class="info-box bg-dark">
-      <span class="info-box-icon"><i class="fas fa-unlink"></i></span>
-      <div class="info-box-content">
-        <span class="info-box-text">Lost Link</span>
-        <span class="info-box-number">{{ drones_lost_link }}</span>
+    <div class="hud-card">
+      <div class="hud-header">
+        <h3 class="hud-title">Lost Link</h3>
+        <span class="hud-badge lost">Alert</span>
       </div>
+      <div class="metric-value">{{ drones_lost_link }}</div>
     </div>
   </div>
   <div class="col-lg-3 col-md-6">
-    <div class="info-box bg-dark">
-      <span class="info-box-icon"><i class="fas fa-user-shield"></i></span>
-      <div class="info-box-content">
-        <span class="info-box-text">Pilotos Activos</span>
-        <span class="info-box-number">{{ pilots_active }}</span>
+    <div class="hud-card">
+      <div class="hud-header">
+        <h3 class="hud-title">Pilotos Activos</h3>
+        <span class="hud-badge online">Online</span>
       </div>
+      <div class="metric-value">{{ pilots_active }}</div>
     </div>
   </div>
   <div class="col-lg-3 col-md-6">
-    <div class="info-box bg-dark">
-      <span class="info-box-icon"><i class="fas fa-bell"></i></span>
-      <div class="info-box-content">
-        <span class="info-box-text">Alertas Abiertas</span>
-        <span class="info-box-number">{{ alerts_open }}</span>
+    <div class="hud-card">
+      <div class="hud-header">
+        <h3 class="hud-title">Alertas Abiertas</h3>
+        <span class="hud-badge alert">Active</span>
       </div>
+      <div class="metric-value">{{ alerts_open }}</div>
     </div>
   </div>
   <div class="col-lg-3 col-md-6">
-    <div class="info-box bg-dark">
-      <span class="info-box-icon"><i class="fas fa-triangle-exclamation"></i></span>
-      <div class="info-box-content">
-        <span class="info-box-text">Críticas</span>
-        <span class="info-box-number">{{ alerts_critical }}</span>
+    <div class="hud-card">
+      <div class="hud-header">
+        <h3 class="hud-title">Críticas</h3>
+        <span class="hud-badge lost">Critical</span>
       </div>
+      <div class="metric-value">{{ alerts_critical }}</div>
     </div>
   </div>
 </div>
 
-<div class="row">
+<div class="row g-4 mt-1">
   <div class="col-lg-8">
-    <div class="card card-outline card-primary">
-      <div class="card-header">
-        <h3 class="card-title">Mapa Operacional</h3>
+    <div class="hud-card">
+      <div class="hud-header">
+        <h3 class="hud-title">Active Operations</h3>
+        <span class="hud-badge active">Live Feed</span>
       </div>
-      <div class="card-body">
-        <div id="soc-map" class="map-container"></div>
+      <div class="live-feed">
+        <div>
+          <div>Operational Grid Online</div>
+          <small class="text-muted">Overlay táctico listo para despliegue.</small>
+        </div>
       </div>
     </div>
   </div>
   <div class="col-lg-4">
-    <div class="card card-outline card-secondary">
-      <div class="card-header">
-        <h3 class="card-title">Turnos de Hoy</h3>
+    <div class="hud-card">
+      <div class="hud-header">
+        <h3 class="hud-title">Turnos de Hoy</h3>
+        <span class="hud-badge active">Active</span>
       </div>
-      <div class="card-body p-0">
-        <table class="table table-dark table-striped mb-0">
+      <div class="table-responsive">
+        <table class="table hud-table table-dark table-striped mb-0">
           <thead>
             <tr>
               <th>Piloto</th>
@@ -159,11 +157,11 @@
   </div>
 </div>
 
-<div class="row">
+<div class="row g-4 mt-1">
   <div class="col-lg-7">
-    <div class="card card-outline card-warning">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h3 class="card-title">Cola de Alertas</h3>
+    <div class="hud-card">
+      <div class="hud-header">
+        <h3 class="hud-title">Alerts Overview</h3>
         <form method="get" class="d-flex gap-2">
           <select name="status" class="form-select form-select-sm">
             <option value="">Estado</option>
@@ -186,8 +184,8 @@
           <button class="btn btn-sm btn-outline-light" type="submit">Filtrar</button>
         </form>
       </div>
-      <div class="card-body p-0">
-        <table class="table table-dark table-striped mb-0">
+      <div class="table-responsive">
+        <table class="table hud-table table-dark table-striped mb-0">
           <thead>
             <tr>
               <th>Tipo</th>
@@ -228,60 +226,31 @@
           </tbody>
         </table>
       </div>
-      <div class="card-footer text-end">
+      <div class="mt-3 text-end">
         <a class="btn btn-sm btn-outline-light" href="{% url 'admin-alert-center' %}">Ir a inbox</a>
       </div>
     </div>
   </div>
   <div class="col-lg-5">
-    <div class="card card-outline card-info">
-      <div class="card-header">
-        <h3 class="card-title">Timeline Audit</h3>
+    <div class="hud-card">
+      <div class="hud-header">
+        <h3 class="hud-title">Audit Timeline</h3>
+        <span class="hud-badge active">Live</span>
       </div>
-      <div class="card-body">
-        <ul class="list-group list-group-flush">
-          {% for event in audit_events %}
-            <li class="list-group-item bg-transparent text-light border-secondary">
-              <div class="d-flex justify-content-between">
-                <span><strong>{{ event.actor|default:"Sistema" }}</strong> · {{ event.action }}</span>
-                <span class="text-muted">{{ event.created_at|date:"H:i" }}</span>
-              </div>
-              <small class="text-muted">{{ event.object_type }} #{{ event.object_id }}</small>
-            </li>
-          {% empty %}
-            <li class="list-group-item bg-transparent text-muted">Sin eventos recientes.</li>
-          {% endfor %}
-        </ul>
-      </div>
+      <ul class="list-group list-group-flush">
+        {% for event in audit_events %}
+          <li class="list-group-item bg-transparent text-light border-secondary">
+            <div class="d-flex justify-content-between">
+              <span><strong>{{ event.actor|default:"Sistema" }}</strong> · {{ event.action }}</span>
+              <span class="text-muted">{{ event.created_at|date:"H:i" }}</span>
+            </div>
+            <small class="text-muted">{{ event.object_type }} #{{ event.object_id }}</small>
+          </li>
+        {% empty %}
+          <li class="list-group-item bg-transparent text-muted">Sin eventos recientes.</li>
+        {% endfor %}
+      </ul>
     </div>
   </div>
 </div>
-
-{{ drones_map|json_script:"drones-map-data" }}
-{{ active_routes|json_script:"active-routes-data" }}
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-  const map = L.map('soc-map').setView([4.711, -74.0721], 11);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '&copy; OpenStreetMap'
-  }).addTo(map);
-
-  const dronesData = JSON.parse(document.getElementById('drones-map-data').textContent);
-  dronesData.forEach(drone => {
-    const marker = L.marker([drone.last_lat, drone.last_lng]).addTo(map);
-    marker.bindPopup(`<strong>${drone.serial}</strong><br>${drone.status}<br>${drone.last_seen || ''}`);
-  });
-
-  const routesData = JSON.parse(document.getElementById('active-routes-data').textContent);
-  routesData.forEach(route => {
-    if (route.zone_geojson) {
-      L.geoJSON(route.zone_geojson, {
-        style: { color: '#38bdf8', weight: 2, fillOpacity: 0.15 }
-      }).addTo(map);
-    }
-  });
-</script>
 {% endblock %}

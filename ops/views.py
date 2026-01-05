@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -10,6 +12,7 @@ from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from accounts.decorators import role_required
+from alerts.models import Alert
 from accounts.mixins import RoleRequiredMixin
 from audit.utils import log_event
 from fleet.models import Drone
@@ -266,3 +269,62 @@ def operation_notes(request, session_id):
     else:
         form = OperationSessionForm(instance=session)
     return render(request, "ops/operation_notes_form.html", {"form": form, "session": session})
+
+
+@login_required
+@role_required("PILOT")
+def operation_center(request):
+    now = timezone.now()
+    requires_migrations = False
+    try:
+        shift = (
+            Shift.objects.filter(pilot=request.user)
+            .exclude(status=Shift.Status.CANCELLED)
+            .order_by("start_at")
+            .first()
+        )
+        current_session = None
+        command_queue = []
+        alerts_open = Alert.objects.filter(status=Alert.Status.OPEN).count()
+        if shift:
+            current_session = OperationSession.objects.filter(
+                shift=shift, status=OperationSession.Status.RUNNING
+            ).first()
+            command_queue = AgentCommand.objects.filter(drone=shift.drone).order_by(
+                "-created_at"
+            )[:6]
+    except (OperationalError, ProgrammingError):
+        requires_migrations = True
+        shift = None
+        current_session = None
+        command_queue = []
+        alerts_open = 0
+
+    agent_online = False
+    if shift and shift.drone.last_seen:
+        agent_online = shift.drone.last_seen >= now - timedelta(minutes=10)
+
+    if current_session:
+        mission_status = "LIVE" if agent_online else "LOST LINK"
+    elif shift:
+        mission_status = "WAITING"
+    else:
+        mission_status = "TERMINATED"
+
+    signal_status = "STABLE" if agent_online else "DEGRADED"
+
+    if requires_migrations:
+        messages.warning(request, "No hay datos disponibles. Ejecuta las migraciones.")
+
+    return render(
+        request,
+        "ops/operation_center.html",
+        {
+            "shift": shift,
+            "current_session": current_session,
+            "mission_status": mission_status,
+            "signal_status": signal_status,
+            "command_queue": command_queue,
+            "alerts_open": alerts_open,
+        },
+    )

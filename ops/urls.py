@@ -10,6 +10,7 @@ from .views import (
     ShiftListView,
     ShiftUpdateView,
     end_operation,
+    operation_center,
     operation_notes,
     start_operation,
 )
@@ -23,6 +24,7 @@ urlpatterns = [
     path("admin/shifts/create/", ShiftCreateView.as_view(), name="admin-shift-create"),
     path("admin/shifts/<int:pk>/edit/", ShiftUpdateView.as_view(), name="admin-shift-update"),
     path("admin/shifts/<int:pk>/delete/", ShiftDeleteView.as_view(), name="admin-shift-delete"),
+    path("pilot/operation/", operation_center, name="pilot-operation-center"),
     path("pilot/operation/start/", start_operation, name="pilot-operation-start"),
     path("pilot/operation/end/", end_operation, name="pilot-operation-end"),
     path("pilot/operation/<int:session_id>/notes/", operation_notes, name="pilot-operation-notes"),

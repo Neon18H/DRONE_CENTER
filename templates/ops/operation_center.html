@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-header mb-4">
+  <div class="container-fluid">
+    <div class="row align-items-center">
+      <div class="col-sm-6">
+        <h1 class="m-0">Operation Command Center</h1>
+      </div>
+      <div class="col-sm-6 text-end">
+        <span class="text-muted">Mission Session Control</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="command-grid">
+  <div class="hud-card command-panel">
+    <div class="hud-header">
+      <h3 class="hud-title">Telemetry</h3>
+      <span class="hud-badge active">Realtime</span>
+    </div>
+    <div class="telemetry-list">
+      <span>Drone: {{ shift.drone.serial|default:"N/A" }}</span>
+      <span>Route: {{ shift.route.name|default:"N/A" }}</span>
+      <span>Altitude: {{ shift.drone.last_alt|default:"--" }} m</span>
+      <span>Battery: {{ shift.drone.last_battery|default:"--" }}%</span>
+      <span>Signal: {{ shift.drone.last_signal|default:"--" }}%</span>
+      <span>Heading: {{ shift.drone.last_heading|default:"--" }}°</span>
+      <span>Last Seen: {{ shift.drone.last_seen|default:"--" }}</span>
+      <span>GPS: {{ shift.drone.last_lat|default:"--" }}, {{ shift.drone.last_lng|default:"--" }}</span>
+      <span>Operator: {{ request.user.username }}</span>
+    </div>
+    <div class="hud-divider"></div>
+    <div class="telemetry-list">
+      <span>Signal Integrity: {{ signal_status }}</span>
+      <span>Mission Status: {{ mission_status }}</span>
+      <span>Session ID: {{ current_session.id|default:"--" }}</span>
+      <span>Shift Window: {{ shift.start_at|default:"--" }} → {{ shift.end_at|default:"--" }}</span>
+    </div>
+  </div>
+
+  <div class="hud-card command-panel">
+    <div class="hud-header">
+      <h3 class="hud-title">Live Feed</h3>
+      {% if mission_status == "LIVE" %}
+        <span class="hud-badge active">Live</span>
+      {% elif mission_status == "LOST LINK" %}
+        <span class="hud-badge lost">Lost Link</span>
+      {% elif mission_status == "TERMINATED" %}
+        <span class="hud-badge lost">Terminated</span>
+      {% else %}
+        <span class="hud-badge alert">Waiting</span>
+      {% endif %}
+    </div>
+    <div class="live-feed">
+      <div>
+        <div>Live Feed Placeholder</div>
+        <small class="text-muted">Señal encriptada preparada para streaming.</small>
+      </div>
+    </div>
+    <div class="hud-divider"></div>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{% url 'pilot-operation-start' %}" class="btn btn-success">Start Operation</a>
+      <a href="{% url 'pilot-operation-end' %}" class="btn btn-danger">End Operation</a>
+      {% if current_session %}
+        <a href="{% url 'pilot-operation-notes' current_session.id %}" class="btn btn-secondary">Notas</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="hud-card command-panel">
+    <div class="hud-header">
+      <h3 class="hud-title">Mission Status</h3>
+      <span class="hud-badge online">System</span>
+    </div>
+    <div class="telemetry-list">
+      <span>Current State: {{ mission_status }}</span>
+      <span>Link: {{ signal_status }}</span>
+      <span>Operator: {{ request.user.profile.full_name|default:request.user.username }}</span>
+      <span>Active Alerts: {{ alerts_open }}</span>
+    </div>
+    <div class="hud-divider"></div>
+    <div class="hud-header">
+      <h3 class="hud-title">Command Queue</h3>
+      <span class="hud-badge active">Queue</span>
+    </div>
+    <div class="command-queue">
+      {% for command in command_queue %}
+        <div class="queue-item">
+          <div><strong>{{ command.command }}</strong></div>
+          <div class="text-muted">{{ command.created_at|date:"H:i:s" }} · {{ command.status }}</div>
+        </div>
+      {% empty %}
+        <div class="queue-item text-muted">Sin comandos recientes.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
