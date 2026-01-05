@@ -1,0 +1,82 @@
+body.dark-mode {
+  background-color: #0b0f14;
+}
+
+.navbar-dark {
+  background: #0d1117;
+}
+
+.sidebar-dark-primary {
+  background: #0f172a;
+}
+
+.content-wrapper {
+  background-color: #0b0f14;
+}
+
+.card {
+  background-color: #111827;
+  border: 1px solid #1f2937;
+}
+
+.card-header {
+  background-color: #111827;
+  border-bottom: 1px solid #1f2937;
+}
+
+.small-box {
+  border-radius: 0.75rem;
+}
+
+.kpi-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.badge-severity-low {
+  background-color: #0ea5e9;
+}
+
+.badge-severity-med {
+  background-color: #f59e0b;
+}
+
+.badge-severity-high {
+  background-color: #f97316;
+}
+
+.badge-severity-critical {
+  background-color: #ef4444;
+}
+
+.badge-status-open {
+  background-color: #ef4444;
+}
+
+.badge-status-ack {
+  background-color: #f59e0b;
+}
+
+.badge-status-in_progress {
+  background-color: #6366f1;
+}
+
+.badge-status-resolved {
+  background-color: #10b981;
+}
+
+.table-dark th,
+.table-dark td {
+  color: #e5e7eb;
+}
+
+.map-container {
+  height: 360px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.timeline {
+  margin: 0;
+}

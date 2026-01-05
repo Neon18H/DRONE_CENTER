@@ -11,6 +11,8 @@ class DroneForm(forms.ModelForm):
             "model",
             "status",
             "last_seen",
+            "last_lat",
+            "last_lng",
             "firmware",
             "camera_type",
         ]

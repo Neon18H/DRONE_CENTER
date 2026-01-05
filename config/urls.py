@@ -9,4 +9,5 @@ urlpatterns = [
     path("fleet/", include("fleet.urls")),
     path("ops/", include("ops.urls")),
     path("alerts/", include("alerts.urls")),
+    path("audit/", include("audit.urls")),
 ]

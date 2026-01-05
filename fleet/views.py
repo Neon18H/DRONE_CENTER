@@ -1,8 +1,13 @@
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
+from accounts.decorators import role_required
 from accounts.mixins import RoleRequiredMixin
+from audit.utils import log_event
 
 from .forms import DroneForm
 from .models import Drone
@@ -36,3 +41,16 @@ class DroneDeleteView(LoginRequiredMixin, RoleRequiredMixin, DeleteView):
     template_name = "fleet/drone_confirm_delete.html"
     success_url = reverse_lazy("admin-drone-list")
     allowed_roles = ("ADMIN",)
+
+
+@login_required
+@role_required("ADMIN")
+@require_POST
+def mark_drone_status(request, drone_id, status):
+    if status not in Drone.Status.values:
+        return redirect("admin-drone-list")
+    drone = get_object_or_404(Drone, id=drone_id)
+    drone.status = status
+    drone.save(update_fields=["status"])
+    log_event(request.user, "update_drone_status", "Drone", str(drone.id), request, {"status": status})
+    return redirect("admin-drone-list")
