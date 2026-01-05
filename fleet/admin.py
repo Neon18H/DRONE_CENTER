@@ -30,7 +30,7 @@ class DroneAdmin(admin.ModelAdmin):
                 )
             },
         ),
-        ("Sistema", {"fields": ("firmware", "camera_type")}),
+        ("Sistema", {"fields": ("firmware", "camera_type", "video_url")}),
         ("API", {"fields": ("api_token",)}),
     )
     readonly_fields = (

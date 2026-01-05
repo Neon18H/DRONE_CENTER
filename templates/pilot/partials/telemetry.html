@@ -1,0 +1,50 @@
+{% if drone %}
+  <div class="row g-3">
+    <div class="col-6">
+      <small class="text-muted">LAT</small>
+      <div>{{ drone.last_lat|default_if_none:"-" }}</div>
+    </div>
+    <div class="col-6">
+      <small class="text-muted">LNG</small>
+      <div>{{ drone.last_lng|default_if_none:"-" }}</div>
+    </div>
+    <div class="col-6">
+      <small class="text-muted">ALT</small>
+      <div>{{ drone.last_alt|default_if_none:"-" }}</div>
+    </div>
+    <div class="col-6">
+      <small class="text-muted">SPEED</small>
+      <div>-</div>
+    </div>
+    <div class="col-6">
+      <small class="text-muted">BATTERY</small>
+      <div>
+        {% if drone.last_battery is not None %}
+          {{ drone.last_battery }}%
+        {% else %}
+          -
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-6">
+      <small class="text-muted">SIGNAL</small>
+      <div>
+        {% if drone.last_signal is not None %}
+          {{ drone.last_signal }}%
+        {% else %}
+          -
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-6">
+      <small class="text-muted">HEADING</small>
+      <div>{{ drone.last_heading|default_if_none:"-" }}</div>
+    </div>
+    <div class="col-6">
+      <small class="text-muted">LAST SEEN</small>
+      <div>{{ drone.last_seen|default_if_none:"-" }}</div>
+    </div>
+  </div>
+{% else %}
+  <p class="text-muted mb-0">Sin telemetría disponible.</p>
+{% endif %}
