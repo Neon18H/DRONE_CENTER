@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import OperationalError, ProgrammingError
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -7,5 +8,10 @@ from .models import Profile
 
 @receiver(post_save, sender=get_user_model())
 def create_profile(sender, instance, created, **kwargs):
-    if created:
-        Profile.objects.create(user=instance)
+    if not created:
+        return
+
+    try:
+        Profile.objects.get_or_create(user=instance)
+    except (OperationalError, ProgrammingError):
+        return
