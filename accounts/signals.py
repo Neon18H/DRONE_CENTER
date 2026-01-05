@@ -8,10 +8,11 @@ from .models import Profile
 
 @receiver(post_save, sender=get_user_model())
 def create_profile(sender, instance, created, **kwargs):
-    if not created:
-        return
-
     try:
-        Profile.objects.get_or_create(user=instance)
+        profile, _ = Profile.objects.get_or_create(user=instance)
+        desired_role = Profile.Roles.ADMIN if (instance.is_superuser or instance.is_staff) else Profile.Roles.PILOT
+        if profile.role != desired_role:
+            profile.role = desired_role
+            profile.save(update_fields=["role"])
     except (OperationalError, ProgrammingError):
         return
