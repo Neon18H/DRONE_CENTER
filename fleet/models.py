@@ -12,6 +12,8 @@ class Drone(models.Model):
     model = models.CharField(max_length=100)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.AVAILABLE)
     last_seen = models.DateTimeField(null=True, blank=True)
+    last_lat = models.FloatField(null=True, blank=True)
+    last_lng = models.FloatField(null=True, blank=True)
     firmware = models.CharField(max_length=100, blank=True)
     camera_type = models.CharField(max_length=100, blank=True)
 

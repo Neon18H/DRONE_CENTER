@@ -31,6 +31,9 @@ class Alert(models.Model):
         BOTH = "BOTH", "Both"
 
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="assigned_alerts"
+    )
     session = models.ForeignKey(OperationSession, on_delete=models.SET_NULL, null=True, blank=True)
     category = models.CharField(max_length=20, choices=Categories.choices)
     severity = models.CharField(max_length=10, choices=Severity.choices)
@@ -40,6 +43,7 @@ class Alert(models.Model):
     location_lng = models.FloatField(null=True, blank=True)
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
         return f"{self.category} - {self.severity}"
@@ -52,3 +56,13 @@ class AlertRecipient(models.Model):
 
     def __str__(self) -> str:
         return f"Alert {self.alert_id} -> {self.recipient_user_id}"
+
+
+class AlertComment(models.Model):
+    alert = models.ForeignKey(Alert, on_delete=models.CASCADE, related_name="comments")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return f"AlertComment {self.alert_id}"

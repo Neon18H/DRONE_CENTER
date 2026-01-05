@@ -5,6 +5,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from accounts.decorators import role_required
@@ -12,7 +13,7 @@ from accounts.mixins import RoleRequiredMixin
 from audit.utils import log_event
 from fleet.models import Drone
 
-from .forms import OperationSessionForm, RouteForm, ShiftForm
+from .forms import DispatchShiftForm, OperationSessionForm, RouteForm, ShiftForm
 from .models import OperationSession, Route, Shift
 
 
@@ -63,6 +64,7 @@ class ShiftCreateView(LoginRequiredMixin, RoleRequiredMixin, CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         log_event(self.request.user, "create_shift", "Shift", str(self.object.id), self.request)
+        messages.success(self.request, "Turno creado y despachado.")
         return response
 
 
@@ -79,6 +81,45 @@ class ShiftDeleteView(LoginRequiredMixin, RoleRequiredMixin, DeleteView):
     template_name = "ops/shift_confirm_delete.html"
     success_url = reverse_lazy("admin-shift-list")
     allowed_roles = ("ADMIN",)
+
+
+class DispatchCreateView(LoginRequiredMixin, RoleRequiredMixin, CreateView):
+    model = Shift
+    form_class = DispatchShiftForm
+    template_name = "ops/dispatch_form.html"
+    success_url = reverse_lazy("admin-dispatch")
+    allowed_roles = ("ADMIN",)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        log_event(self.request.user, "create_shift", "Shift", str(self.object.id), self.request)
+        return response
+
+
+@login_required
+@role_required("ADMIN")
+@require_POST
+def activate_shift(request, shift_id):
+    shift = get_object_or_404(Shift, id=shift_id)
+    if shift.status == Shift.Status.SCHEDULED:
+        shift.status = Shift.Status.ACTIVE
+        shift.save(update_fields=["status"])
+        Drone.objects.filter(id=shift.drone_id).update(status=Drone.Status.IN_USE)
+        log_event(request.user, "activate_shift", "Shift", str(shift.id), request)
+    return redirect(request.POST.get("next") or "admin-dashboard")
+
+
+@login_required
+@role_required("ADMIN")
+@require_POST
+def cancel_shift(request, shift_id):
+    shift = get_object_or_404(Shift, id=shift_id)
+    if shift.status != Shift.Status.CANCELLED:
+        shift.status = Shift.Status.CANCELLED
+        shift.save(update_fields=["status"])
+        Drone.objects.filter(id=shift.drone_id).update(status=Drone.Status.AVAILABLE)
+        log_event(request.user, "cancel_shift", "Shift", str(shift.id), request)
+    return redirect(request.POST.get("next") or "admin-dashboard")
 
 
 @login_required

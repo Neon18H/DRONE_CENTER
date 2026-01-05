@@ -1,86 +1,287 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-<h1>Dashboard Admin</h1>
+<div class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2 align-items-center">
+      <div class="col-sm-6">
+        <h1 class="m-0">Command Center</h1>
+      </div>
+      <div class="col-sm-6 text-end">
+        <span class="text-muted">Última actualización: {{ now|date:"Y-m-d H:i" }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if requires_migrations %}
+  <div class="alert alert-warning">
+    Ejecuta migraciones para habilitar el panel completo.
+  </div>
+{% endif %}
+
 <div class="row">
-  <div class="col-md-4">
+  <div class="col-md-3">
+    <div class="small-box bg-info">
+      <div class="inner">
+        <h3>{{ drones_online }}</h3>
+        <p class="kpi-label mb-0">Drones Online</p>
+      </div>
+      <div class="icon"><i class="fas fa-satellite-dish"></i></div>
+    </div>
+  </div>
+  <div class="col-md-3">
     <div class="small-box bg-success">
       <div class="inner">
         <h3>{{ drones_available }}</h3>
-        <p>Drones disponibles</p>
+        <p class="kpi-label mb-0">Disponibles</p>
       </div>
-      <div class="icon"><i class="fas fa-check"></i></div>
+      <div class="icon"><i class="fas fa-check-circle"></i></div>
     </div>
   </div>
-  <div class="col-md-4">
+  <div class="col-md-3">
     <div class="small-box bg-warning">
       <div class="inner">
         <h3>{{ drones_in_use }}</h3>
-        <p>En uso</p>
+        <p class="kpi-label mb-0">En Uso</p>
       </div>
-      <div class="icon"><i class="fas fa-helicopter"></i></div>
+      <div class="icon"><i class="fas fa-fighter-jet"></i></div>
     </div>
   </div>
-  <div class="col-md-4">
+  <div class="col-md-3">
     <div class="small-box bg-danger">
       <div class="inner">
         <h3>{{ drones_maintenance }}</h3>
-        <p>Mantenimiento</p>
+        <p class="kpi-label mb-0">Mantenimiento</p>
       </div>
       <div class="icon"><i class="fas fa-tools"></i></div>
     </div>
   </div>
 </div>
 
-<div class="card">
-  <div class="card-header">
-    <h3 class="card-title">Turnos de hoy</h3>
+<div class="row">
+  <div class="col-lg-3 col-md-6">
+    <div class="info-box bg-dark">
+      <span class="info-box-icon"><i class="fas fa-unlink"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Lost Link</span>
+        <span class="info-box-number">{{ drones_lost_link }}</span>
+      </div>
+    </div>
   </div>
-  <div class="card-body">
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Piloto</th>
-          <th>Drone</th>
-          <th>Ruta</th>
-          <th>Inicio</th>
-          <th>Fin</th>
-          <th>Estado</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for shift in shifts_today %}
-          <tr>
-            <td>{{ shift.pilot.username }}</td>
-            <td>{{ shift.drone.serial }}</td>
-            <td>{{ shift.route.name }}</td>
-            <td>{{ shift.start_at }}</td>
-            <td>{{ shift.end_at }}</td>
-            <td>{{ shift.status }}</td>
-          </tr>
-        {% empty %}
-          <tr><td colspan="6">Sin turnos.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div class="col-lg-3 col-md-6">
+    <div class="info-box bg-dark">
+      <span class="info-box-icon"><i class="fas fa-user-shield"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Pilotos Activos</span>
+        <span class="info-box-number">{{ pilots_active }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-md-6">
+    <div class="info-box bg-dark">
+      <span class="info-box-icon"><i class="fas fa-bell"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Alertas Abiertas</span>
+        <span class="info-box-number">{{ alerts_open }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3 col-md-6">
+    <div class="info-box bg-dark">
+      <span class="info-box-icon"><i class="fas fa-triangle-exclamation"></i></span>
+      <div class="info-box-content">
+        <span class="info-box-text">Críticas</span>
+        <span class="info-box-number">{{ alerts_critical }}</span>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="card">
-  <div class="card-header">
-    <h3 class="card-title">Alertas recientes</h3>
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card card-outline card-primary">
+      <div class="card-header">
+        <h3 class="card-title">Mapa Operacional</h3>
+      </div>
+      <div class="card-body">
+        <div id="soc-map" class="map-container"></div>
+      </div>
+    </div>
   </div>
-  <div class="card-body">
-    <ul class="list-group">
-      {% for alert in recent_alerts %}
-        <li class="list-group-item">
-          <strong>{{ alert.category }}</strong> - {{ alert.severity }} - {{ alert.status }}
-          <span class="text-muted">{{ alert.created_at }}</span>
-        </li>
-      {% empty %}
-        <li class="list-group-item">Sin alertas.</li>
-      {% endfor %}
-    </ul>
+  <div class="col-lg-4">
+    <div class="card card-outline card-secondary">
+      <div class="card-header">
+        <h3 class="card-title">Turnos de Hoy</h3>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-dark table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Piloto</th>
+              <th>Drone</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for shift in shifts_today %}
+              <tr>
+                <td>{{ shift.pilot.username }}</td>
+                <td>{{ shift.drone.serial }}</td>
+                <td><span class="badge bg-secondary">{{ shift.status }}</span></td>
+                <td class="text-end">
+                  {% if shift.status == 'SCHEDULED' %}
+                    <form method="post" action="{% url 'admin-shift-activate' shift.id %}" class="d-inline">
+                      {% csrf_token %}
+                      <input type="hidden" name="next" value="{% url 'admin-dashboard' %}">
+                      <button class="btn btn-sm btn-success" type="submit"><i class="fas fa-play"></i></button>
+                    </form>
+                  {% endif %}
+                  <a class="btn btn-sm btn-outline-info" href="{% url 'admin-shift-update' shift.id %}">
+                    <i class="fas fa-pen"></i>
+                  </a>
+                  <form method="post" action="{% url 'admin-shift-cancel' shift.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'admin-dashboard' %}">
+                    <button class="btn btn-sm btn-outline-danger" type="submit"><i class="fas fa-ban"></i></button>
+                  </form>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="text-center text-muted">Sin turnos.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
+
+<div class="row">
+  <div class="col-lg-7">
+    <div class="card card-outline card-warning">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="card-title">Cola de Alertas</h3>
+        <form method="get" class="d-flex gap-2">
+          <select name="status" class="form-select form-select-sm">
+            <option value="">Estado</option>
+            {% for value, label in alert_model.Status.choices %}
+              <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          <select name="severity" class="form-select form-select-sm">
+            <option value="">Severidad</option>
+            {% for value, label in alert_model.Severity.choices %}
+              <option value="{{ value }}" {% if severity_filter == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          <select name="category" class="form-select form-select-sm">
+            <option value="">Categoría</option>
+            {% for value, label in alert_model.Categories.choices %}
+              <option value="{{ value }}" {% if category_filter == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-sm btn-outline-light" type="submit">Filtrar</button>
+        </form>
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-dark table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Severidad</th>
+              <th>Estado</th>
+              <th>Creada</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for alert in alert_queue %}
+              <tr>
+                <td>{{ alert.category }}</td>
+                <td><span class="badge badge-severity-{{ alert.severity|lower }}">{{ alert.severity }}</span></td>
+                <td><span class="badge badge-status-{{ alert.status|lower }}">{{ alert.status }}</span></td>
+                <td>{{ alert.created_at|date:"H:i" }}</td>
+                <td class="text-end">
+                  <form method="post" action="{% url 'admin-alert-status' alert.id 'ACK' %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'admin-dashboard' %}">
+                    <button class="btn btn-sm btn-outline-light" type="submit">ACK</button>
+                  </form>
+                  <form method="post" action="{% url 'admin-alert-status' alert.id 'IN_PROGRESS' %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'admin-dashboard' %}">
+                    <button class="btn btn-sm btn-outline-warning" type="submit">IN PROG</button>
+                  </form>
+                  <form method="post" action="{% url 'admin-alert-status' alert.id 'RESOLVED' %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'admin-dashboard' %}">
+                    <button class="btn btn-sm btn-outline-success" type="submit">RES</button>
+                  </form>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5" class="text-center text-muted">Sin alertas.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer text-end">
+        <a class="btn btn-sm btn-outline-light" href="{% url 'admin-alert-center' %}">Ir a inbox</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card card-outline card-info">
+      <div class="card-header">
+        <h3 class="card-title">Timeline Audit</h3>
+      </div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          {% for event in audit_events %}
+            <li class="list-group-item bg-transparent text-light border-secondary">
+              <div class="d-flex justify-content-between">
+                <span><strong>{{ event.actor|default:"Sistema" }}</strong> · {{ event.action }}</span>
+                <span class="text-muted">{{ event.created_at|date:"H:i" }}</span>
+              </div>
+              <small class="text-muted">{{ event.object_type }} #{{ event.object_id }}</small>
+            </li>
+          {% empty %}
+            <li class="list-group-item bg-transparent text-muted">Sin eventos recientes.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{ drones_map|json_script:"drones-map-data" }}
+{{ active_routes|json_script:"active-routes-data" }}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map('soc-map').setView([4.711, -74.0721], 11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(map);
+
+  const dronesData = JSON.parse(document.getElementById('drones-map-data').textContent);
+  dronesData.forEach(drone => {
+    const marker = L.marker([drone.last_lat, drone.last_lng]).addTo(map);
+    marker.bindPopup(`<strong>${drone.serial}</strong><br>${drone.status}<br>${drone.last_seen || ''}`);
+  });
+
+  const routesData = JSON.parse(document.getElementById('active-routes-data').textContent);
+  routesData.forEach(route => {
+    if (route.zone_geojson) {
+      L.geoJSON(route.zone_geojson, {
+        style: { color: '#38bdf8', weight: 2, fillOpacity: 0.15 }
+      }).addTo(map);
+    }
+  });
+</script>
 {% endblock %}
