@@ -8,6 +8,9 @@
     <div class="card">
       <div class="card-header"><h3 class="card-title">Mi turno</h3></div>
       <div class="card-body">
+        {% if requires_migrations %}
+          <div class="alert alert-warning">Base de datos sin migraciones. Ejecuta migraciones.</div>
+        {% endif %}
         {% if shift %}
           <p><strong>Ruta:</strong> {{ shift.route.name }}</p>
           <p><strong>Inicio:</strong> {{ shift.start_at }}</p>
@@ -33,6 +36,31 @@
           <p><strong>Serial:</strong> {{ shift.drone.serial }}</p>
           <p><strong>Modelo:</strong> {{ shift.drone.model }}</p>
           <p><strong>Estado:</strong> {{ shift.drone.status }}</p>
+          <p>
+            <strong>Agente:</strong>
+            {% if agent_online %}
+              <span class="badge bg-success">ONLINE</span>
+            {% else %}
+              <span class="badge bg-secondary">OFFLINE</span>
+            {% endif %}
+          </p>
+          <p>
+            <strong>Misión:</strong>
+            {% if current_session %}
+              <span class="badge bg-info">RUNNING</span>
+            {% else %}
+              <span class="badge bg-light text-dark">IDLE</span>
+            {% endif %}
+          </p>
+          <p>
+            <strong>Último comando:</strong>
+            {% if last_command %}
+              <span class="badge bg-primary">{{ last_command.command }}</span>
+              <span class="badge bg-secondary">{{ last_command.status }}</span>
+            {% else %}
+              <span class="text-muted">Sin comandos</span>
+            {% endif %}
+          </p>
         {% else %}
           <p>Sin dron asignado.</p>
         {% endif %}

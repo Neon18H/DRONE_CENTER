@@ -11,6 +11,7 @@ from alerts.forms import AlertForm
 from alerts.models import Alert
 from audit.models import AuditLog
 from fleet.models import Drone
+from integrations.models import AgentCommand
 from ops.models import OperationSession, Route, Shift
 
 
@@ -99,42 +100,63 @@ def admin_dashboard(request):
 @role_required("PILOT")
 def pilot_dashboard(request):
     now = timezone.now()
-    shift = (
-        Shift.objects.filter(pilot=request.user)
-        .exclude(status=Shift.Status.CANCELLED)
-        .annotate(
-            status_priority=Case(
-                When(status=Shift.Status.ACTIVE, then=Value(0)),
-                default=Value(1),
-                output_field=IntegerField(),
+    requires_migrations = False
+    try:
+        shift = (
+            Shift.objects.filter(pilot=request.user)
+            .exclude(status=Shift.Status.CANCELLED)
+            .annotate(
+                status_priority=Case(
+                    When(status=Shift.Status.ACTIVE, then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField(),
+                )
             )
+            .order_by("status_priority", "start_at")
+            .first()
         )
-        .order_by("status_priority", "start_at")
-        .first()
-    )
-    current_session = None
-    if shift:
-        current_session = OperationSession.objects.filter(
-            shift=shift, status=OperationSession.Status.RUNNING
-        ).first()
-    alert_form = AlertForm()
-    alerts_received = (
-        Alert.objects.filter(
-            Q(target__in=[Alert.Target.PILOTS, Alert.Target.BOTH])
-            | Q(alertrecipient__recipient_user=request.user)
+        current_session = None
+        if shift:
+            current_session = OperationSession.objects.filter(
+                shift=shift, status=OperationSession.Status.RUNNING
+            ).first()
+        alert_form = AlertForm()
+        alerts_received = (
+            Alert.objects.filter(
+                Q(target__in=[Alert.Target.PILOTS, Alert.Target.BOTH])
+                | Q(alertrecipient__recipient_user=request.user)
+            )
+            .distinct()
+            .order_by("-created_at")[:5]
         )
-        .distinct()
-        .order_by("-created_at")[:5]
-    )
+        last_command = (
+            AgentCommand.objects.filter(drone=shift.drone).order_by("-created_at").first()
+            if shift
+            else None
+        )
+    except (OperationalError, ProgrammingError):
+        requires_migrations = True
+        shift = None
+        current_session = None
+        alert_form = AlertForm()
+        alerts_received = []
+        last_command = None
+
+    agent_online = False
+    if shift and shift.drone.last_seen:
+        agent_online = shift.drone.last_seen >= now - timedelta(minutes=10)
 
     return render(
         request,
         "dashboard/pilot_dashboard.html",
         {
+            "requires_migrations": requires_migrations,
             "shift": shift,
             "now": now,
             "current_session": current_session,
             "alert_form": alert_form,
             "alerts_received": alerts_received,
+            "agent_online": agent_online,
+            "last_command": last_command,
         },
     )
