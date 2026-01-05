@@ -33,14 +33,21 @@
         <div class="d-flex flex-wrap gap-2">
           {% if current_session %}
             <a href="{% url 'pilot-operation-center' %}" class="btn btn-outline-light">Command Center</a>
-            <a href="{% url 'pilot-operation-end' %}" class="btn btn-danger">End Operation</a>
+            <form method="post" action="{% url 'pilot-operation-end' %}" class="m-0">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">End Operation</button>
+            </form>
             <a href="{% url 'pilot-operation-notes' current_session.id %}" class="btn btn-secondary">Notas</a>
           {% else %}
-            <a href="{% url 'pilot-operation-start' %}" class="btn btn-success">Start Operation</a>
+            <form method="post" action="{% url 'pilot-operation-start' %}" class="m-0">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-success">Start Operation</button>
+            </form>
           {% endif %}
         </div>
       {% else %}
         <p>No tienes turno asignado.</p>
+        <button class="btn btn-secondary" disabled>Start Operation</button>
       {% endif %}
     </div>
   </div>

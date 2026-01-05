@@ -13,6 +13,7 @@ class DroneForm(forms.ModelForm):
             "model",
             "status",
             "api_token",
+            "video_url",
             "last_seen",
             "last_lat",
             "last_lng",
@@ -22,6 +23,7 @@ class DroneForm(forms.ModelForm):
         widgets = {
             "last_seen": forms.DateTimeInput(attrs={"type": "datetime-local"}),
             "api_token": forms.TextInput(attrs={"class": "form-control"}),
+            "video_url": forms.URLInput(attrs={"class": "form-control"}),
         }
 
     def save(self, commit=True):

@@ -19,6 +19,7 @@ class Drone(models.Model):
     last_battery = models.IntegerField(null=True, blank=True)
     last_signal = models.IntegerField(null=True, blank=True)
     last_heading = models.IntegerField(null=True, blank=True)
+    video_url = models.URLField(null=True, blank=True)
     firmware = models.CharField(max_length=100, blank=True)
     camera_type = models.CharField(max_length=100, blank=True)
 
