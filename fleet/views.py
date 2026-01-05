@@ -1,5 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+import secrets
+
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
@@ -54,3 +56,14 @@ def mark_drone_status(request, drone_id, status):
     drone.save(update_fields=["status"])
     log_event(request.user, "update_drone_status", "Drone", str(drone.id), request, {"status": status})
     return redirect("admin-drone-list")
+
+
+@login_required
+@role_required("ADMIN")
+@require_POST
+def regenerate_drone_token(request, drone_id):
+    drone = get_object_or_404(Drone, id=drone_id)
+    drone.api_token = secrets.token_urlsafe(32)
+    drone.save(update_fields=["api_token"])
+    log_event(request.user, "regenerate_drone_token", "Drone", str(drone.id), request, {})
+    return redirect("admin-drone-update", pk=drone.id)
